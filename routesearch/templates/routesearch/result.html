@@ -1,0 +1,43 @@
+<html>
+    <head>
+        <title>HooooooooooHaaaaaaaa!</title>
+
+    </head>
+    <body>
+        {{ user_name }}'s trip information : <br><br>
+
+        Number of People : {{people_number}}<br><br>
+
+        Route :
+        {% for city in route %}
+          {{city}}&nbsp;&nbsp;
+        {% endfor%}<br><br><br><br>
+
+
+
+
+        Start_Date : {{ start_date }}<br><br>
+        From :<br>
+        {% for airport in airport1 %}
+          {{ airport.getName }}&nbsp;:&nbsp;{{ airport.getCode }}
+          <br>
+        {% endfor%}<br><br>
+        To :<br>
+        {% for airport in airport2 %}
+          {{ airport.getName }}&nbsp;:&nbsp;{{ airport.getCode }}
+          <br>
+        {% endfor%}<br><br>
+
+        End_Date : {{ end_date }}<br><br>
+        From :<br>
+        {% for airport in airport3 %}
+          {{ airport.getName }}&nbsp;:&nbsp;{{ airport.getCode }}
+          <br>
+        {% endfor%}<br><br>
+        To :<br>
+        {% for airport in airport4 %}
+          {{ airport.getName }}&nbsp;:&nbsp;{{ airport.getCode }}
+          <br>
+        {% endfor%}<br><br>
+    </body>
+</html>

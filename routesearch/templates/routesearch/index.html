@@ -1,0 +1,40 @@
+<html>
+    <head>
+        <title>HooooooooooHaaaaaaaa!</title>
+        <script>
+          function insButton(){
+            var target = document.getElementById("cities");
+            var str = '<input type="text" name="city" value="" style="width:60px">';
+
+            var addedDiv = document.createElement("div");
+            addedDiv.setAttribute("name","city")
+            addedDiv.innerHTML = str;
+            target.appendChild(addedDiv);
+          }
+        </script>
+    </head>
+    <body>
+        Hello!
+        This is a prototype page of Tour Service!
+        <br>
+        <br>
+
+        <form class="input-form text-center" name="survey" method="GET" action= "{% url 'result' %}">
+          {% csrf_token %}
+          <div>Name : <input type="text" name="user_name" value="" style="width:60px"></div><br>
+          <div>Number of People : <input type="text" name="people" value="" style="width:20px"></div><br>
+          <div id="cities" style="display:float;">Cities :
+            <div><input type="text" name="city" value="" style="width:60px"></div>
+            <div><input type="text" name="city" value="" style="width:60px"></div>
+
+          </div>
+          <input type="button" style="cursor:hand" onClick="insButton()" value="추가">
+          <br><br>
+          <div>StartDate : <input type="text" name="start_date" value="" style="width:60px"></div><br>
+          <div>EndDate : <input type="text" name="end_date" value="" style="width:60px"></div><br>
+          <div>
+            <input type="submit" value="Submit">
+          </div>
+        </form>
+    </body>
+</html>
