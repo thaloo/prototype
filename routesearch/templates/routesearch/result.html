@@ -1,43 +1,137 @@
+{% load staticfiles %}
 <html>
     <head>
         <title>HooooooooooHaaaaaaaa!</title>
+        <link rel="stylesheet" href="{% static 'css/result.css' %}">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script>
+        $(document).ready(function() {
+          $('[id="selectable1"]').click(function(event) {
+            name = $(this).find('#name').text()
+            code = $(this).find('#code').text()
+            $('#start_date_selected_from').find('#airport_name').html(name)
+            $('#start_date_selected_from').find('#airport_code').html(code)
+          });
 
+          $('[id="selectable2"]').click(function(event) {
+            name = $(this).find('#name').text()
+            code = $(this).find('#code').text()
+            $('#start_date_selected_to').find('#airport_name').html(name)
+            $('#start_date_selected_to').find('#airport_code').html(code)
+          });
+
+          $('[id="selectable3"]').click(function(event) {
+            name = $(this).find('#name').text()
+            code = $(this).find('#code').text()
+            $('#end_date_selected_from').find('#airport_name').html(name)
+            $('#end_date_selected_from').find('#airport_code').html(code)
+          });
+
+          $('[id="selectable4"]').click(function(event) {
+            name = $(this).find('#name').text()
+            code = $(this).find('#code').text()
+            $('#end_date_selected_to').find('#airport_name').html(name)
+            $('#end_date_selected_to').find('#airport_code').html(code)
+          });
+
+          $('#iframe_button_start').click(function(event){
+            code1 = $('#start_date_selected_from').find('#airport_code').text()
+            code2 = $('#start_date_selected_to').find('#airport_code').text()
+            date = $('#airline_start_date').text()
+            people_number = $('#people_number').text()
+            url = "https://www.google.com/flights/?f=0&gl#search;f="+code1+";t="+code2+";d="+date+";tt=o"+";px="+people_number
+            $('#result_start').text(url)
+            $('#result_start').prop("href",url)
+          });
+
+          $('#iframe_button_end').click(function(event){
+            code1 = $('#end_date_selected_from').find('#airport_code').text()
+            code2 = $('#end_date_selected_to').find('#airport_code').text()
+            date = $('#airline_end_date').text()
+            people_number = $('#people_number').text()
+            url = "https://www.google.com/flights/?f=0&gl#search;f="+code1+";t="+code2+";d="+date+";tt=o"+";px="+people_number
+            $('#result_end').text(url)
+            $('#result_end').prop("href",url)
+          });
+
+        });
+        </script>
     </head>
     <body>
-        {{ user_name }}'s trip information : <br><br>
+      <div class="contents">
+        <h1>{{ user_name }}'s trip information : </h1>
+        <br>
+        <br>
+        <br>
+        <h5>Number of People : <span id="people_number">{{people_number}}</span></h5>
 
-        Number of People : {{people_number}}<br><br>
-
-        Route :
+        <h5>Route :&nbsp;
         {% for city in route %}
           {{city}}&nbsp;&nbsp;
-        {% endfor%}<br><br><br><br>
+        {% endfor%}
+        </h5>
+        <br>
+        <h2>Select Your Airport</h2>
+        <div id="start_date">
+          <h4>Start_Date : <span id="airline_start_date">{{ start_date }}</span></h4>
 
-
-
-
-        Start_Date : {{ start_date }}<br><br>
-        From :<br>
-        {% for airport in airport1 %}
-          {{ airport.getName }}&nbsp;:&nbsp;{{ airport.getCode }}
+          <h5>From :</h5>
+          {% for airport in airport1 %}
+            <div id="selectable1"><span id="name">{{ airport.getName }}</span>&nbsp;:&nbsp;<span id="code">{{ airport.getCode }}</span></div>
+          {% endfor%}
           <br>
-        {% endfor%}<br><br>
-        To :<br>
-        {% for airport in airport2 %}
-          {{ airport.getName }}&nbsp;:&nbsp;{{ airport.getCode }}
+          <h5>To :</h5>
+          {% for airport in airport2 %}
+            <div id="selectable2"><span id="name">{{ airport.getName }}</span>&nbsp;:&nbsp;<span id="code">{{ airport.getCode }}</span></div>
+          {% endfor%}
           <br>
-        {% endfor%}<br><br>
+        </div>
 
-        End_Date : {{ end_date }}<br><br>
-        From :<br>
-        {% for airport in airport3 %}
-          {{ airport.getName }}&nbsp;:&nbsp;{{ airport.getCode }}
+        <div id="end_date">
+          <h4>End_Date : <span id="airline_end_date">{{ end_date }}</span></h4>
+          <h5>From :</h5>
+          {% for airport in airport3 %}
+            <div id="selectable3"><span id="name">{{ airport.getName }}</span>&nbsp;:&nbsp;<span id="code">{{ airport.getCode }}</span></div>
+          {% endfor%}
           <br>
-        {% endfor%}<br><br>
-        To :<br>
-        {% for airport in airport4 %}
-          {{ airport.getName }}&nbsp;:&nbsp;{{ airport.getCode }}
+          <h5>To :</h5>
+          {% for airport in airport4 %}
+            <div id="selectable4"><span id="name">{{ airport.getName }}</span>&nbsp;:&nbsp;<span id="code">{{ airport.getCode }}</span></div>
+          {% endfor%}
           <br>
-        {% endfor%}<br><br>
+        </div>
+        <br>
+        <div>
+          <h3>Selected for {{ start_date }}</h3>
+          From :
+          <span id="start_date_selected_from">
+            <span id="airport_name"></span>&nbsp;<span id="airport_code"></span>
+          </span>
+          <br>
+          To :
+          <span id="start_date_selected_to">
+            <span id="airport_name"></span>&nbsp;<span id="airport_code"></span>
+          </span>
+        </div>
+
+        <div id="iframe_button_start">Search_Airline</div>
+        <a target="_blank" id="result_start"></a>
+
+        <div>
+          <h3>Selected for {{ end_date }}</h3>
+          From :
+          <span id="end_date_selected_from">
+            <span id="airport_name"></span>&nbsp;<span id="airport_code"></span>
+          </span>
+          <br>
+          To :
+          <span id="end_date_selected_to">
+            <span id="airport_name"></span>&nbsp;<span id="airport_code"></span>
+          </span>
+        </div>
+
+        <div id="iframe_button_end">Search Airline!</div>
+        <a target="_blank" id="result_end"></a>
+      </div>
     </body>
 </html>

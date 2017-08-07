@@ -8,15 +8,17 @@ from urllib.request import urlopen
 from urllib.request import Request
 from urllib.request import urlretrieve
 from urllib.parse import quote
+from urllib.parse import unquote
 from bs4 import BeautifulSoup
 from xml.dom import minidom
 from collections import defaultdict
 
 class Airport:
-    def __init__(self, name, code, region):
+    def __init__(self, name, code, region, country):
         self.name = name
         self.code = code
         self.region = region
+        self.country = country
     @property
     def getName(self):
         return self.name
@@ -29,6 +31,9 @@ class Airport:
     def getRegion(self):
         return self.code
 
+    @property
+    def getCountry(self):
+        return self.country
 
 def getUrl(s, d, date, people_number):
     return "https://www.google.com/flights/?f=0&gl#search;f="+quote(str(s))+";t="+quote(str(d))+";d="+date+";tt=o"+";px="+people_number
@@ -60,12 +65,13 @@ def getAirport(query):
     for line in lines:
         temp = quote(line).split('%2C')
 
-        name = temp[1].replace("%22","").replace("%20"," ")
+        name = unquote(temp[1].replace("%22","").replace("%20"," "))
         code = temp[4].replace("%22","")
-        region = temp[2].replace("%22","").replace("%20"," ")
+        region = unquote(temp[2].replace("%22","").replace("%20"," "))
+        country = temp[3].replace("%22","").replace("%20"," ")
 
         if code != "%5CN":
-            airport_info[region].append(Airport(name,code,region))
+            airport_info[region].append(Airport(name,code,region,country))
     f.close()
     if len(airport_info[query]) != 0:
         return airport_info[query]
