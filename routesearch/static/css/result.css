@@ -8,14 +8,7 @@ h1{
   text-align: left;
 }
 
-#iframe_button_start{
-  width:110px;
-  height:20px;
-  background: #D5D5D5;
-  text-align: center;
-}
-
-#iframe_button_end{
+#search_airlines{
   width:110px;
   height:20px;
   background: #D5D5D5;

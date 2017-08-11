@@ -9,51 +9,70 @@
           $('[id="selectable1"]').click(function(event) {
             name = $(this).find('#name').text()
             code = $(this).find('#code').text()
+            date_start = $('#airline_start_date').text()
+            people_number = $('#people_number').text()
             $('#start_date_selected_from').find('#airport_name').html(name)
             $('#start_date_selected_from').find('#airport_code').html(code)
+            $('#code1').val(code)
+            $('#start_parameter').val(date_start)
+            $('#people_parameter').val(people_number)
           });
 
           $('[id="selectable2"]').click(function(event) {
             name = $(this).find('#name').text()
             code = $(this).find('#code').text()
+            date_start = $('#airline_start_date').text()
+            people_number = $('#people_number').text()
             $('#start_date_selected_to').find('#airport_name').html(name)
             $('#start_date_selected_to').find('#airport_code').html(code)
+            $('#code2').val(code)
+            $('#start_parameter').val(date_start)
+            $('#people_parameter').val(people_number)
           });
 
           $('[id="selectable3"]').click(function(event) {
             name = $(this).find('#name').text()
             code = $(this).find('#code').text()
+            date_end = $('#airline_end_date').text()
+            people_number = $('#people_number').text()
             $('#end_date_selected_from').find('#airport_name').html(name)
             $('#end_date_selected_from').find('#airport_code').html(code)
+            $('#code3').val(code)
+            $('#end_parameter').val(date_end)
+            $('#people_parameter').val(people_number)
           });
 
           $('[id="selectable4"]').click(function(event) {
             name = $(this).find('#name').text()
             code = $(this).find('#code').text()
+            date_end = $('#airline_end_date').text()
+            people_number = $('#people_number').text()
             $('#end_date_selected_to').find('#airport_name').html(name)
             $('#end_date_selected_to').find('#airport_code').html(code)
+            $('#code4').val(code)
+            $('#end_parameter').val(date_end)
+            $('#people_parameter').val(people_number)
           });
 
-          $('#iframe_button_start').click(function(event){
+          /*$('#search_airlines').click(function(event){
             code1 = $('#start_date_selected_from').find('#airport_code').text()
             code2 = $('#start_date_selected_to').find('#airport_code').text()
-            date = $('#airline_start_date').text()
+            date_start = $('#airline_start_date').text()
+            code3 = $('#end_date_selected_from').find('#airport_code').text()
+            code4 = $('#end_date_selected_to').find('#airport_code').text()
+            date_end = $('#airline_end_date').text()
             people_number = $('#people_number').text()
-            url = "https://www.google.com/flights/?f=0&gl#search;f="+code1+";t="+code2+";d="+date+";tt=o"+";px="+people_number
-            $('#result_start').text(url)
-            $('#result_start').prop("href",url)
-          });
+            url1 = "https://www.google.com/flights/?f=0&gl#search;f="+code1+";t="+code2+";d="+date_start+";tt=o"+";px="+people_number
+            url2 = "https://www.google.com/flights/?f=0&gl#search;f="+code3+";t="+code4+";d="+date_end+";tt=o"+";px="+people_number
+            $('#result_start').text(url1)
+            $('#result_start').prop("href",url1)
+            $('#result_end').text(url2)
+            $('#result_end').prop("href",url2)
 
-          $('#iframe_button_end').click(function(event){
-            code1 = $('#end_date_selected_from').find('#airport_code').text()
-            code2 = $('#end_date_selected_to').find('#airport_code').text()
-            date = $('#airline_end_date').text()
-            people_number = $('#people_number').text()
-            url = "https://www.google.com/flights/?f=0&gl#search;f="+code1+";t="+code2+";d="+date+";tt=o"+";px="+people_number
-            $('#result_end').text(url)
-            $('#result_end').prop("href",url)
+          });*/
+          $('#search_airlines').click(function(event){
+            $('#fares_view').prop("src","{% url 'fares' %}")
           });
-
         });
         </script>
     </head>
@@ -114,9 +133,6 @@
           </span>
         </div>
 
-        <div id="iframe_button_start">Search_Airline</div>
-        <a target="_blank" id="result_start"></a>
-
         <div>
           <h3>Selected for {{ end_date }}</h3>
           From :
@@ -128,10 +144,24 @@
           <span id="end_date_selected_to">
             <span id="airport_name"></span>&nbsp;<span id="airport_code"></span>
           </span>
+          <br>
+          <form id="fares_form" name="survey_fare" method="GET" target="fares_view">
+            {% csrf_token %}
+              <input type="hidden" id="code1" name="code1" value="">
+              <input type="hidden"id="code2" name="code2" value="">
+              <input type="hidden"id="code3" name="code3" value="">
+              <input type="hidden"id="code4" name="code4" value="">
+              <input type="hidden"id="start_parameter" name="start_parameter" value="">
+              <input type="hidden"id="end_parameter" name="end_parameter" value="">
+              <input type="hidden"id="people_parameter" name="people_parameter" value="">
+              <input id="search_airlines" type="submit" value="Search!">
+          </form>
+
+          <iframe src="{% url 'fares' %}" scrolling="no" frameborder="0" width="800px" height="200px"name="fares_view">Sorry :( Your Browser is not supported...</iframe>
+
         </div>
 
-        <div id="iframe_button_end">Search Airline!</div>
-        <a target="_blank" id="result_end"></a>
       </div>
+
     </body>
 </html>

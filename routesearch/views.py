@@ -1,9 +1,10 @@
-from django.shortcuts import render
-from django.shortcuts import render_to_response
-from django.shortcuts import HttpResponse
 import csv
 import os.path
 import codecs
+import json
+from django.shortcuts import render
+from django.shortcuts import render_to_response
+from django.shortcuts import HttpResponse
 from urllib.request import urlopen
 from urllib.request import Request
 from urllib.request import urlretrieve
@@ -36,7 +37,7 @@ class Airport:
         return self.country
 
 def getUrl(s, d, date, people_number):
-    return "https://www.google.com/flights/?f=0&gl#search;f="+quote(str(s))+";t="+quote(str(d))+";d="+date+";tt=o"+";px="+people_number
+    return "https://www.google.com/flights/?f=0&gl#search;f="+quote(str(s)).replace("%27","").replace("%5B","").replace("%5D","")+";t="+quote(str(d)).replace("%27","").replace("%5B","").replace("%5D","")+";d="+date+";tt=o"+";px="+people_number
 
 def getCityData(query):
     try:
@@ -76,8 +77,57 @@ def getAirport(query):
     if len(airport_info[query]) != 0:
         return airport_info[query]
     else:
-        if 'city' in query:
-            return getAirportCode(query.split(" ")[0])
+        if 'City' in query:
+            return getAirport(query.split(" ")[0])
+
+        # Try again search airport names
+        for line in lines:
+            temp = quote(line).split('%2C')
+
+            name = unquote(temp[1].replace("%22","").replace("%20"," "))
+            code = temp[4].replace("%22","")
+            region = unquote(temp[2].replace("%22","").replace("%20"," "))
+            country = temp[3].replace("%22","").replace("%20"," ")
+
+            if query in name:
+                return airport_info[region]
+
+        return None
+
+def getMinimumFare(s, d, date, people_number):
+    api_key = "AIzaSyD3aOnfRprdxCdxJuBaZgiVKibwdgHmnKU"
+    url = "https://www.googleapis.com/qpxExpress/v1/trips/search?key=" + api_key
+    headers = {'content-type': 'application/json'}
+
+    values = {
+        "request": {
+        "passengers": {
+          "kind": "qpxexpress#passengerCounts",
+          "adultCount": people_number,
+        },
+        "slice": [
+          {
+            "kind": "qpxexpress#sliceInput",
+            "origin": s,
+            "destination": d,
+            "date": date,
+          }
+        ],
+        "refundable": "false",
+        "solutions": 1
+      }
+    }
+    data = json.dumps(values)
+    data = data.encode("utf-8")
+
+    req = Request(url, data=data, headers = headers)
+    f = urlopen(req)
+    response = f.read()
+    result = json.loads(response)
+    fare = result['trips']['tripOption'][0]['saleTotal']
+    currency = fare[0:3]
+    fare = fare[3:len(fare)]
+    return [fare,currency]
 
 def index(request):
     return render(request, 'routesearch/index.html', {})
@@ -112,6 +162,37 @@ def result(request):
         except:
             omitted.append(city)
 
+    if len(cities)<1:
+        if 'code1' in request.GET:
+            sf = request.GET['code1']
+        if 'code2' in request.GET:
+            st = request.GET.getlist('code2')
+        if 'code3' in request.GET:
+            ef = request.GET['code3']
+        if 'code4' in request.GET:
+            et = request.GET['code4']
+        if 'start_parameter' in request.GET:
+            start_date = request.GET['start_parameter']
+        if 'end_parameter' in request.GET:
+            end_date = request.GET['end_parameter']
+        if 'people_parameter' in request.GET:
+            pn = request.GET['people_parameter']
+
+        fare1 = getMinimumFare(sf,st,start_date,pn)
+        fare2 = getMinimumFare(ef,et,end_date,pn)
+        currency1 = fare1[1]
+        currency2 = fare2[1]
+
+        start = getUrl(sf,st,start_date,pn)
+        end = getUrl(ef,et,end_date,pn)
+
+        return render_to_response('routesearch/fares.html',{'fare1':fare1[0],
+                                                            'fare2':fare2[0],
+                                                            'currency1':currency1,
+                                                            'currency2':currency2,
+                                                            'start':start,
+                                                            'end':end,})
+
     c1 = cities[0]
     c2 = cities[1]
     c3 = cities[len(cities)-2]
@@ -123,6 +204,7 @@ def result(request):
         airport3 = getAirport(getCityData(c3)[0])
         airport4 = getAirport(getCityData(c4)[0])
 
+
     return render_to_response('routesearch/result.html',{'user_name':user_name,
                                                         'route':route,
                                                         'start_date':start_date,
@@ -132,3 +214,7 @@ def result(request):
                                                         'airport2':airport2,
                                                         'airport3':airport3,
                                                         'airport4':airport4,})
+
+
+def fares(request):
+    return render(request,'routesearch/empty.html')
