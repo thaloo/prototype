@@ -13,6 +13,96 @@ from urllib.parse import unquote
 from bs4 import BeautifulSoup
 from xml.dom import minidom
 from collections import defaultdict
+from openpyxl import load_workbook
+from xml.etree import ElementTree
+import glob, os
+import os.path
+import datetime
+
+
+routes=[]
+
+def init_routes():
+    if len(routes)>0:
+        return
+    loaded_wb = load_workbook(filename=os.path.dirname(os.path.realpath(__file__))+"/result.xlsx")
+    sheet = loaded_wb.worksheets[0]
+
+    for i in range(1,sheet.max_row+1):
+        route=[]
+        col=1
+        while(sheet.cell(row=i,column=col).value):
+            route.append(sheet.cell(row=i,column=col).value)
+            col = col + 1
+        routes.append(route)
+
+def find_route(query):
+    global routes
+    res = []
+    for route in routes:
+        if query in route:
+            res.append(route)
+    return res
+
+def find_route_with_queries(queries):
+    global routes
+    result = routes
+    for i in range(len(queries)):
+        result = find_route(queries[i])
+    return result
+
+def filter_by_activeness(activeness, routes, days):
+    indexes = []
+    for route in routes:
+        indexes.append(len(route)/days*10)
+    sorted_route = {}
+
+    res = []
+    for i,route in enumerate(routes):
+        if int(indexes[i]) in range(0,2):
+            res.append(route)
+    sorted_route[1]=res
+    res = []
+    for i,route in enumerate(routes):
+        if int(indexes[i]) in range(3,4):
+            res.append(route)
+    sorted_route[2]=res
+    res = []
+    for i,route in enumerate(routes):
+        if int(indexes[i]) in range(5,6):
+            res.append(route)
+    sorted_route[3]=res
+    res = []
+    for i,route in enumerate(routes):
+        if int(indexes[i]) in range(7,9):
+            res.append(route)
+    sorted_route[4]=res
+    res = []
+    for i,route in enumerate(routes):
+        if int(indexes[i]) in range(10,100):
+            res.append(route)
+    sorted_route[5]=res
+
+    if activeness in sorted_route:
+        return sorted_route[activeness]
+    else:
+        candidate=0
+        minimum=100
+        for i,a in enumerate(sorted_route):
+            if len(sorted_route[i+1])>0:
+                if minimum > abs(i+1 - int(activeness)):
+                    minimum = abs(i+1 - int(activeness))
+                    candidate = i+1
+        print(str(sorted_route))
+        if minimum!=0:
+            return sorted_route[candidate]
+        else:
+            return None
+
+def routefinder(city_list, activeness, days):
+    init_routes()
+    return filter_by_activeness(activeness,find_route_with_queries(city_list),days)
+
 
 class Airport:
     def __init__(self, name, code, region, country):
@@ -46,14 +136,20 @@ def getCityData(query):
         request.add_header('Accept-Encoding', 'utf-8')
 
         response = urlopen(request)
-        contents = response.read()
+        tree = ElementTree.parse(response)
 
-        xml_raw = minidom.parseString(contents)
+        response_tag = tree.getroot()
+        result = response_tag.find("result")
 
-        address_raw = quote(xml_raw.getElementsByTagName("formatted_address")[0].firstChild.data)
-        address = address_raw.split('%2C%20')
+        for a in result.findall("address_component"):
+            if a.find("type").text == "country":
+                country = a.find("long_name").text
+        city_name=result.find("address_component").find("long_name").text
 
-        return [address[0].replace('%20',' '), address[len(address)-1].replace('%20', ' ')]
+        lat = result.find("geometry").find("location").find("lat").text
+        lng = result.find("geometry").find("location").find("lng").text
+        print([city_name, country, lat, lng])
+        return [city_name, country, lat, lng]
     except:
         return None
 
@@ -113,6 +209,7 @@ def getMinimumFare(s, d, date, people_number):
             "date": date,
           }
         ],
+        "saleCountry": "KR",
         "refundable": "false",
         "solutions": 1
       }
@@ -123,7 +220,7 @@ def getMinimumFare(s, d, date, people_number):
     req = Request(url, data=data, headers = headers)
     f = urlopen(req)
     response = f.read()
-    result = json.loads(response)
+    result = json.loads(response.decode("utf-8"))
     fare = result['trips']['tripOption'][0]['saleTotal']
     currency = fare[0:3]
     fare = fare[3:len(fare)]
@@ -132,9 +229,33 @@ def getMinimumFare(s, d, date, people_number):
 def index(request):
     return render(request, 'routesearch/index.html', {})
 
+def route(request):
+    cities = []
+
+    if 'user_name' in request.GET:
+        user_name = request.GET['user_name']
+    if 'city' in request.GET:
+        cities = request.GET.getlist('city')
+    if 'start_date' in request.GET:
+        start_date = request.GET['start_date']
+    if 'end_date' in request.GET:
+        end_date = request.GET['end_date']
+    if 'people' in request.GET:
+        people_number = request.GET['people']
+    if 'style' in request.GET:
+        style = request.GET['style']
+    route_list = routefinder(cities,style,(datetime.datetime.strptime(end_date,'%Y-%m-%d')-datetime.datetime.strptime(start_date,'%Y-%m-%d')).days)
+    return render_to_response('routesearch/show_routes.html',{'user_name':user_name,
+                                                        'route':route,
+                                                        'start_date':start_date,
+                                                        'end_date':end_date,
+                                                        'people_number':people_number,
+                                                        'route_list':route_list})
+
 def result(request):
     cities = []
     route = []
+    route_coordinates=[]
     countries = []
     omitted = []
 
@@ -148,7 +269,8 @@ def result(request):
         end_date = request.GET['end_date']
     if 'people' in request.GET:
         people_number = request.GET['people']
-
+    if 'style' in request.GET:
+        style = request.GET['style']
 
 
     for city in cities:
@@ -157,6 +279,7 @@ def result(request):
         try:
             temp = getCityData(city)
             route.append(temp[0])
+            route_coordinates.append([temp[2],temp[3]])
             if getCityData(city)[1] not in countries:
                     countries.append(temp[1])
         except:
@@ -191,29 +314,27 @@ def result(request):
                                                             'currency1':currency1,
                                                             'currency2':currency2,
                                                             'start':start,
-                                                            'end':end,})
+                                                            'end':end,
+                                                            'total':int(fare1[0])+int(fare2[0])})
 
     c1 = cities[0]
-    c2 = cities[1]
-    c3 = cities[len(cities)-2]
-    c4 = cities[len(cities)-1]
+    c2 = cities[len(cities)-1]
 
-    if (c1 and c2 and c3 and c4) not in omitted:
+    if (c1 and c2) not in omitted:
         airport1 = getAirport(getCityData(c1)[0])
         airport2 = getAirport(getCityData(c2)[0])
-        airport3 = getAirport(getCityData(c3)[0])
-        airport4 = getAirport(getCityData(c4)[0])
 
 
     return render_to_response('routesearch/result.html',{'user_name':user_name,
                                                         'route':route,
+                                                        'route_coordinates':route_coordinates,
                                                         'start_date':start_date,
                                                         'end_date':end_date,
                                                         'people_number':people_number,
                                                         'airport1':airport1,
                                                         'airport2':airport2,
-                                                        'airport3':airport3,
-                                                        'airport4':airport4,})
+                                                        'airport3':getAirport('Seoul')+getAirport('Busan'),
+                                                        'airport4':getAirport('Seoul')+getAirport('Busan'),})
 
 
 def fares(request):

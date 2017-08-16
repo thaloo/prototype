@@ -19,12 +19,12 @@
         <br>
         <br>
 
-        <form class="input-form text-center" name="survey" method="GET" action= "{% url 'result' %}">
+        <form class="input-form text-center" name="survey" method="GET" action= "{% url 'route' %}">
           {% csrf_token %}
           <div>Name : <input type="text" name="user_name" value="" style="width:60px"></div><br>
           <div>Number of People : <input type="text" name="people" value="" style="width:20px"></div><br>
+          <div>Tour Style(Activeness 1 to 5) : <input type="text" name="style" value="" style="width:20px"></div><br>
           <div id="cities" style="display:float;">Cities :
-            <div><input type="text" name="city" value="" style="width:60px"></div>
             <div><input type="text" name="city" value="" style="width:60px"></div>
 
           </div>

@@ -89,18 +89,23 @@
           {{city}}&nbsp;&nbsp;
         {% endfor%}
         </h5>
+        {% for coordinate in route_coordinates %}
+          {% for a in coordinate %}
+            {{a}}&nbsp;
+          {% endfor %}<br>
+        {% endfor%}
         <br>
         <h2>Select Your Airport</h2>
         <div id="start_date">
           <h4>Start_Date : <span id="airline_start_date">{{ start_date }}</span></h4>
 
           <h5>From :</h5>
-          {% for airport in airport1 %}
+          {% for airport in airport3 %}
             <div id="selectable1"><span id="name">{{ airport.getName }}</span>&nbsp;:&nbsp;<span id="code">{{ airport.getCode }}</span></div>
           {% endfor%}
           <br>
           <h5>To :</h5>
-          {% for airport in airport2 %}
+          {% for airport in airport1 %}
             <div id="selectable2"><span id="name">{{ airport.getName }}</span>&nbsp;:&nbsp;<span id="code">{{ airport.getCode }}</span></div>
           {% endfor%}
           <br>
@@ -109,7 +114,7 @@
         <div id="end_date">
           <h4>End_Date : <span id="airline_end_date">{{ end_date }}</span></h4>
           <h5>From :</h5>
-          {% for airport in airport3 %}
+          {% for airport in airport2 %}
             <div id="selectable3"><span id="name">{{ airport.getName }}</span>&nbsp;:&nbsp;<span id="code">{{ airport.getCode }}</span></div>
           {% endfor%}
           <br>

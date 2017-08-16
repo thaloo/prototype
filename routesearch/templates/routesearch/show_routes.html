@@ -1,0 +1,70 @@
+{% load staticfiles %}
+<html>
+    <head>
+        <title>HooooooooooHaaaaaaaa!</title>
+        <link rel="stylesheet" href="{% static 'css/result.css' %}">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script>
+        $(document).ready(function() {
+          $('[id="selectable1"]').click(function(event) {
+            if($('#cities').empty()){
+              c = $(this).children()
+              for(var i=0;i<c.length;i++){
+                insButton(c.eq(i).text())
+              }
+            }else{
+              $('#cities').remove()
+            }
+          });
+        });
+
+        function insButton(text){
+          text = text.replace(" ","")
+          var target = document.getElementById("cities");
+          var str = '<input type="text" name="city" value='+text+' style="width:80px">';
+
+          var addedDiv = document.createElement("div");
+          addedDiv.setAttribute("name","city");
+          addedDiv.innerHTML = str;
+          target.appendChild(addedDiv);
+
+
+        }
+        </script>
+    </head>
+    <body>
+      <div class="contents">
+        <h1>{{ user_name }}'s trip information : </h1>
+        <br>
+        <br>
+        <br>
+        <h5>Our suggestions : </h5></h5>
+          {% for route in route_list %}
+            <div id="selectable1">
+              {% for city in route %}
+                  (<span>{{city}}</span>)
+              {% endfor %}
+            </div>
+          {% endfor %}
+
+          <form class="input-form text-center" name="survey" method="GET" action= "{% url 'result' %}">
+            {% csrf_token %}
+            <div><input type="hidden" name="user_name" value="{{user_name}}" style="width:60px"></div><br>
+            <div><input type="hidden" name="people" value="{{people_number}}" style="width:20px"></div><br>
+            <div><input type="hidden" name="style" value="" style="width:20px"></div><br>
+            <div id="cities" style="display:float;">
+            </div>
+            <br><br>
+            <div><input type="hidden" name="start_date" value="{{start_date}}" style="width:60px"></div><br>
+            <div><input type="hidden" name="end_date" value="{{end_date}}" style="width:60px"></div><br>
+            <div>
+              <input type="submit" value="Submit">
+            </div>
+          </form>
+
+        </div>
+
+      </div>
+
+    </body>
+</html>
