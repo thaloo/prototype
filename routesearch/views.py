@@ -191,7 +191,7 @@ def getAirport(query):
         return None
 
 def getMinimumFare(s, d, date, people_number):
-    api_key = "AIzaSyD3aOnfRprdxCdxJuBaZgiVKibwdgHmnKU"
+    api_key = "AIzaSyB3AP0D4uEi193ob6Y1QAQPtR6rR7wy81g"
     url = "https://www.googleapis.com/qpxExpress/v1/trips/search?key=" + api_key
     headers = {'content-type': 'application/json'}
 
